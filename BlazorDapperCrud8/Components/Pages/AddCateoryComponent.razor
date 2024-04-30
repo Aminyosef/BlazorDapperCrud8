@@ -1,0 +1,108 @@
+﻿@page "/AddNewCategory"
+@using BlazorDapperCrud8.Data
+@using BlazorDapperCrud8.Services
+@inject NotificationService NotificationService
+
+@inject ICategoryService service
+@inject NavigationManager navgationmanger
+@rendermode InteractiveServer
+<EditForm Model="@Category" OnValidSubmit="Categoryinsert">
+    <DataAnnotationsValidator/>
+    <table class="table">
+        <tr>
+            <td>Category Name</td>
+            <td>
+                <RadzenTextBox @bind-Value="Category.Name" />
+                <!--<ValidationMessage For="()=>Category.Name"/>-->
+                </td>
+        </tr>
+        <br/>
+        <tr>
+            <td colspan="2" style="text-align:center">
+<RadzenButton type="submit" Text="Add"/>
+
+
+                <RadzenButton Click="@Cancel" Text="Cancel"/>
+
+            </td>
+        </tr>
+    </table>
+</EditForm>
+@if (Category==null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <RadzenGrid AllowFiltering="true" AllowPaging="true" TItem="Category" PageSize="3" AllowSorting="true" Data="categories" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"  RowSelect="OnSelect">
+       <Columns>
+            <RadzenGridColumn TItem="Category" Property="Id" Title="Id" Width="20px" Filterable="false" />
+            <RadzenGridColumn TItem="Category" Property="Name" Title="Category Name" Width="100px" />
+       </Columns>
+     
+</RadzenGrid>
+
+<hr />
+<RadzenTabs>
+    <Tabs>
+        <RadzenTabsItem Text="details">
+            @if (Category!=null)
+            {
+                    <RadzenGrid AllowPaging="true" TItem="Details" PageSize="3" AllowSorting="true" Data="details">
+                        <Columns>
+                            <RadzenGridColumn TItem="Details" Property="Description" Title="Description" Width="200px" />
+                            <RadzenGridColumn TItem="Details" Property="Amount" Title="Amount" Width="50px">
+                                <Template Context="data">
+                                    @string.Format("{0:f0}",data.Amount)
+                                </Template>
+                            </RadzenGridColumn>
+                            <RadzenGridColumn TItem="Details" Property="Date" Title="Date" Width="50px">
+                                <Template Context="data">
+                                    @string.Format("{0:d}",data.Date)
+                                </Template>
+                            </RadzenGridColumn>
+
+                        </Columns>
+
+                    </RadzenGrid>
+                }
+                else
+                {
+                    <p>No Item Found</p>
+                }
+            </RadzenTabsItem>
+    </Tabs>
+</RadzenTabs>
+} 
+@code {
+    IEnumerable<Category> categories;
+    List<Details> details;
+
+    Category? Category = new Category();
+
+    protected override async Task OnInitializedAsync() {
+        await Reload();
+
+    }
+    async Task Reload()
+    {
+        categories = await service.categoryList();
+
+    }
+    protected async Task Categoryinsert()
+    {
+        await service.AddCategory(Category);
+       await Reload();
+
+
+    }
+    void Cancel()
+    {
+        navgationmanger.NavigateTo("/");
+    }
+    private void OnSelect(Category category)
+    {
+       
+         details = service.detalList().Where(x => x.CategoryId == category.Id).ToList();
+    }
+}
