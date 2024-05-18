@@ -1,84 +1,205 @@
 ﻿@page "/AddNewCategory"
 @using BlazorDapperCrud8.Data
 @using BlazorDapperCrud8.Services
+@using NetcodeHub.Packages.Components.Modal
+@inject DialogService DialogService
+
 @inject NotificationService NotificationService
 
 @inject ICategoryService service
+
 @inject NavigationManager navgationmanger
 @rendermode InteractiveServer
-<EditForm Model="@Category" OnValidSubmit="Categoryinsert">
-    <DataAnnotationsValidator/>
-    <table class="table">
-        <tr>
-            <td>Category Name</td>
-            <td>
-                <RadzenTextBox @bind-Value="Category.Name" />
-                <!--<ValidationMessage For="()=>Category.Name"/>-->
-                </td>
-        </tr>
-        <br/>
-        <tr>
-            <td colspan="2" style="text-align:center">
-<RadzenButton type="submit" Text="Add"/>
+<Modal Actions="EditActions"
+       BootstrapClass="border-success"
+       CustomStyle="width:400px" @bind-Open="edit_Visible">
+    <ContentContent>
 
+        <p>Name</p>
+        <input @bind="Category.Name" />
+    </ContentContent>
+    <ButtonTemplate>
+        <div class="d-flex justify-content-center align-content-center">
+            <button class="btn btn-success btn-sm" value="save" style="margin-right:5px">Save</button>
+            <button class="btn btn-danger btn-sm" value="cancel">Cancel</button>
+        </div>
+    </ButtonTemplate>
+</Modal>
+<Modal BootstrapClass="border-success" Actions="AddDetModal" @bind-Open="visOpen" CustomStyle="width:400px">
+    <ContentContent>
+        <p>Description</p>
+        <input @bind="Detail.Description"/>
+        <p>Amount</p>
+        <input @bind="Detail.Amount"/>
+        <p>Date</p>
+        <input type="date" @bind="Detail.Date"/>
+     </ContentContent>
+     <ButtonTemplate>
+        <div class="d-flex justify-content-center align-content-center">
+            <button class="btn btn-success btn-sm" value="save" style="margin-right:5px">Save</button>
+            <button class="btn btn-danger btn-sm" value="cancel">Cancel</button>
+        </div>
+    </ButtonTemplate>
+</Modal>
+<Modal BootstrapClass="border-success" Actions="AddCatModal" @bind-Open="viscatOpen" CustomStyle="width:400px">
+    <ContentContent>
+        <p>Name</p>
+        <input @bind="Category.Name" />
+    </ContentContent>
+    <ButtonTemplate>
+        <div class="d-flex justify-content-center align-content-center">
+            <button class="btn btn-success btn-sm" value="save" style="margin-right:5px">Save</button>
+            <button class="btn btn-danger btn-sm" value="cancel">Cancel</button>
+        </div>
+    </ButtonTemplate>
+</Modal>
+<Modal Actions="Action" CustomStyle="width:400px;" @bind-Open="dOpen" BootstrapClass="border-danger">
 
-                <RadzenButton Click="@Cancel" Text="Cancel"/>
+        <ContentContent>
+            Are you sure you want to delete the category?
+        </ContentContent>
+        <ButtonTemplate>
+            <div class="d-flex justify-content-center align-content-center">
+                <button class="btn btn-danger btn-sm" value="confirm" style="margin-right:5px">Confirm</button>
+                <button class="btn btn-success btn-sm" value="cancel">Cancel</button>
+            </div>
+        </ButtonTemplate>
+</Modal>
+<Modal Actions="ActionDet" CustomStyle="width:400px;" @bind-Open="detOpen" BootstrapClass="border-danger">
+    <ContentContent>
+        Are you sure you want to delete the detail from the category?
+    </ContentContent>
+    <ButtonTemplate>
+            <div class="d-flex justify-content-center align-content-center">
+            <button class="btn btn-danger btn-sm" value="confirm" style="margin-right:5px">Confirm</button>
+            <button class="btn btn-success btn-sm" value="cancel">Cancel</button>
+            </div>
+    </ButtonTemplate>
+</Modal>
+<Modal Actions="DetailsEditAction"
+       BootstrapClass="border-success"
+       CustomStyle="width:400px;" @bind-Open="detail_Visible">
+    <ContentContent>
+        <div class="row mb-2">
+            <div class="col-3">
+                Description
+                </div>
+                <div class="col-9">
+                <input @bind="Detail.Description" style="width:250px"/></div>
+           </div>
+       
+        <div class="row mb-2">
+            <div class="col-3">
+                Amount
+            </div>
+            <div class="col-9">
+                <input @bind="Detail.Amount" />
 
-            </td>
-        </tr>
-    </table>
-</EditForm>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-3">
+                    Date
+                </div>
+                <div class="col-9">
+                    <input type="date" @bind="Detail.Date" />
+
+                </div>
+        </div>
+    </ContentContent>
+    <ButtonTemplate>
+        <div class="d-flex justify-content-center align-content-center">
+            <button class="btn btn-success btn-sm" value="save" style="margin-right:5px">Save</button>
+            <button class="btn btn-danger btn-sm" value="cancel">Cancel</button>
+        </div>
+    </ButtonTemplate>
+</Modal>
+<RadzenButton Click="()=>viscatOpen=true" Text="Add" />
 @if (Category==null)
 {
     <p>Loading...</p>
 }
 else
 {
-    <RadzenGrid AllowFiltering="true" AllowPaging="true" TItem="Category" PageSize="3" AllowSorting="true" Data="categories" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"  RowSelect="OnSelect">
-       <Columns>
-            <RadzenGridColumn TItem="Category" Property="Id" Title="Id" Width="20px" Filterable="false" />
-            <RadzenGridColumn TItem="Category" Property="Name" Title="Category Name" Width="100px" />
-       </Columns>
+    <RadzenGrid AllowFiltering="true" AllowPaging="true" TItem="Category" PageSize="6" AllowSorting="true" Data="categories" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" RowSelect="OnSelect" EditMode="DataGridEditMode.Single">
+      
+            <Columns>
+
+                <RadzenGridColumn TItem="Category" Property="Id" Title="Id" Width="10px" Filterable="false" />
+
+                <RadzenGridColumn TItem="Category" Property="Name" Title="Category Name" Width="70px">
+                  
+                </RadzenGridColumn>
+
+                <RadzenGridColumn TItem="Category" Context="data" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="20px">
+                    <Template Context="data">
+                    <RadzenButton Icon="add" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => AddDetailRow(data))" @onclick:stopPropagation="true" class="edit-button"></RadzenButton>
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditRow(data))" @onclick:stopPropagation="true" class="edit-button"></RadzenButton>
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => DeleteRow(data))" @onclick:stopPropagation="true"></RadzenButton>
+                    </Template>
+                </RadzenGridColumn>
+
+            </Columns>
      
 </RadzenGrid>
+}
+@if(details == null)
+{
+    <p>Loading..</p>
+}
+else
+{
+    
+    <hr />
+    <RadzenTabs>
+        <Tabs>
+            <RadzenTabsItem Text="details">
 
-<hr />
-<RadzenTabs>
-    <Tabs>
-        <RadzenTabsItem Text="details">
-            @if (Category!=null)
-            {
-                    <RadzenGrid AllowPaging="true" TItem="Details" PageSize="3" AllowSorting="true" Data="details">
-                        <Columns>
-                            <RadzenGridColumn TItem="Details" Property="Description" Title="Description" Width="200px" />
-                            <RadzenGridColumn TItem="Details" Property="Amount" Title="Amount" Width="50px">
-                                <Template Context="data">
-                                    @string.Format("{0:f0}",data.Amount)
-                                </Template>
-                            </RadzenGridColumn>
-                            <RadzenGridColumn TItem="Details" Property="Date" Title="Date" Width="50px">
-                                <Template Context="data">
-                                    @string.Format("{0:d}",data.Date)
-                                </Template>
-                            </RadzenGridColumn>
+                <RadzenGrid AllowPaging="true" TItem="Details" PageSize="10" AllowSorting="true" Data="details" RowSelect="OnSelectDetail">
+                    <Columns>
+                        <RadzenGridColumn TItem="Details" Property="Description" Title="Description" Width="200px" />
+                        <RadzenGridColumn TItem="Details" Property="Amount" Title="Amount" Width="50px">
+                            <Template Context="data">
+                                @string.Format("{0:f0}", data.Amount)
+                            </Template>
+                        </RadzenGridColumn>
+                        <RadzenGridColumn TItem="Details" Property="Date" Title="Date" Width="50px">
+                            <Template Context="data">
+                                @string.Format("{0:d}", data.Date)
+                            </Template>
+                        </RadzenGridColumn>
+                        <RadzenGridColumn TItem="Details" Context="data" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="120px">
+                            <Template Context="data">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditDetailRow(data))" @onclick:stopPropagation="true">
+                                </RadzenButton>
+                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => DeleteDetailRow(data))" @onclick:stopPropagation="true">
+                                </RadzenButton>
+                            </Template>
+                        </RadzenGridColumn>
+                    </Columns>
 
-                        </Columns>
+                </RadzenGrid>
 
-                    </RadzenGrid>
-                }
-                else
-                {
-                    <p>No Item Found</p>
-                }
+
             </RadzenTabsItem>
-    </Tabs>
-</RadzenTabs>
-} 
+        </Tabs>
+    </RadzenTabs>
+}
+
+<!---modall-->
 @code {
+    
     IEnumerable<Category> categories;
     List<Details> details;
-
+    Details Detail = new() { Id = 1, CategoryId = 1 };
+    bool edit_Visible{ get; set; }
+    bool detail_Visible{ get; set; }
+    bool dOpen{ get; set; }
+    bool detOpen{ get; set; }
+    bool visOpen{ get; set; }
+    bool viscatOpen{ get; set; }
     Category? Category = new Category();
+
 
     protected override async Task OnInitializedAsync() {
         await Reload();
@@ -89,20 +210,146 @@ else
         categories = await service.categoryList();
 
     }
+    async Task ReloadDet()
+    {
+        details = [.. (service.detalList().Where(x => x.CategoryId == Category.Id))];
+    }
+    async void EditActions(string action)
+    {
+        switch (action)
+        {
+            case "cancel":
+                edit_Visible=false;
+                break;
+            case "save":
+                await UpdateCategory(Category);
+                break;
+        }
+    }
+    async Task DetailsEditAction(string action)
+    {
+        switch (action)
+        {
+            case "save":
+                await service.UpdateDetails(Detail);
+                await Reload();
+                break;
+            case "cancel":detail_Visible=false;break;
+        }
+    }
+    protected async Task Detailinseert()
+    {
+        await service.AddDetail(Detail);
+        await Reload();
+    }
     protected async Task Categoryinsert()
     {
         await service.AddCategory(Category);
-       await Reload();
+        await Reload();
 
 
+    }
+    async Task Action(string action)
+    {
+        switch (action)
+        {
+            case "confirm":
+                await service.DeleteCategory(Category);
+                await Reload();
+                break;
+            case "cancel":
+                dOpen=false;
+                break;
+        }
+
+    }
+    async Task ActionDet(string action)
+    {
+        switch (action)
+        {
+            case "confirm":
+                await service.RemoveDetails(Detail);
+                await ReloadDet();
+                break;
+            case "cancel":
+                detOpen = false;
+                break;
+        }
+    }
+    async Task AddDetModal(string action)
+    {
+        switch (action)
+        {
+            case "save":
+                await service.AddDetail(Detail);
+                await Reload();
+                break;
+            case "cancel":
+                visOpen=false;
+                break;
+        }
+        Detail = new();
+    }
+    async Task AddCatModal(string action)
+    {
+        switch (action)
+        {
+            case "save":
+                await service.AddCategory(Category);
+                await Reload();
+                break;
+            case "cancel":
+                viscatOpen = false;
+                break;
+        }
+        Category = new();
     }
     void Cancel()
     {
         navgationmanger.NavigateTo("/");
     }
-    private void OnSelect(Category category)
+    void EditRow(Category category)
     {
-       
-         details = service.detalList().Where(x => x.CategoryId == category.Id).ToList();
+        Category = category;
+        edit_Visible = true;
+    }
+    void DeleteRow(Category category)
+    {
+        Category = category;
+        dOpen = true;
+    }
+    void AddDetailRow(Category category)
+    {
+        Category = category;
+        visOpen = true;
+    }
+    void EditDetailRow(Details details)
+    {
+        Detail=details;
+        detail_Visible = true;
+    }
+
+    void DeleteDetailRow(Details details)
+    {
+        Detail=details;
+        detOpen=true;
+
+    }
+    private async Task UpdateCategory(Category category)
+    {
+        // Your code to update the category in the database or data source
+        // For example, using a service or repository:
+        await service.UpdateCategory(category);
+    }
+
+    private async Task OnSelect(Category category)
+    {
+        Category = category;
+        Detail.CategoryId = Category.Id;
+        await ReloadDet();
+    }
+    private void OnSelectDetail(Details detail)
+    {
+        Detail = detail;
     }
 }
